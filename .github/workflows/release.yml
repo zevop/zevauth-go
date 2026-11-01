@@ -1,0 +1,51 @@
+name: Release
+
+# Go modules are published by the tag itself: pushing v0.2.0 is the
+# release. This checks the tag matches the Version constant (which the
+# client sends in its user agent), writes the GitHub Release, and asks
+# the module proxy to fetch the version so `go get` works straight away.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Tag matches zevauth.Version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          code=$(sed -nE 's/^const Version = "(.*)"/\1/p' client.go)
+          if [ "$tag" != "$code" ]; then
+            echo "::error::Tag v$tag does not match zevauth.Version ($code)."
+            exit 1
+          fi
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - run: go vet ./...
+      - run: go test -race -count=1 ./...
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+
+      - name: Ask the module proxy to fetch this version
+        run: |
+          cd "$(mktemp -d)"
+          GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod \
+            go list -m "github.com/${GITHUB_REPOSITORY,,}@${GITHUB_REF_NAME}"
