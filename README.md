@@ -110,4 +110,4 @@ Questions and bug reports: open an issue here, or contact ZevAuth support.
 
 ## License
 
-[MIT](LICENSE). Copyright (c) 2026 ZevOp Inc.
+[MIT](LICENSE). Copyright (c) 2026 Zevop Inc.
