@@ -1,0 +1,147 @@
+{
+  "cases": [
+    {
+      "name": "unauthorized",
+      "status": 401,
+      "headers": {},
+      "body": {
+        "error": {
+          "code": "unauthorized",
+          "message": "Invalid API key."
+        },
+        "documentation": "https://docs.zevauth.com"
+      },
+      "expect": {
+        "code": "unauthorized",
+        "status": 401,
+        "retry": false
+      }
+    },
+    {
+      "name": "not_found",
+      "status": 404,
+      "headers": {},
+      "body": {
+        "error": {
+          "code": "not_found",
+          "message": "No user with that id."
+        },
+        "documentation": "https://docs.zevauth.com"
+      },
+      "expect": {
+        "code": "not_found",
+        "status": 404,
+        "retry": false
+      }
+    },
+    {
+      "name": "domain_code",
+      "status": 403,
+      "headers": {},
+      "body": {
+        "error": {
+          "code": "organization_permission_required",
+          "message": "You need org:manage to do that."
+        }
+      },
+      "expect": {
+        "code": "organization_permission_required",
+        "status": 403,
+        "retry": false
+      }
+    },
+    {
+      "name": "validation",
+      "status": 400,
+      "headers": {},
+      "body": {
+        "error": {
+          "code": "invalid_request",
+          "message": "email must be an email. password is too short"
+        }
+      },
+      "expect": {
+        "code": "invalid_request",
+        "status": 400,
+        "retry": false
+      }
+    },
+    {
+      "name": "rate_limited",
+      "status": 429,
+      "headers": {
+        "retry-after": "2"
+      },
+      "body": {
+        "error": {
+          "code": "rate_limited",
+          "message": "Too many requests."
+        }
+      },
+      "expect": {
+        "code": "rate_limited",
+        "status": 429,
+        "retry": true,
+        "retryAfterSeconds": 2
+      }
+    },
+    {
+      "name": "server_error",
+      "status": 500,
+      "headers": {},
+      "body": {
+        "error": {
+          "code": "internal_error",
+          "message": "An unexpected error occurred."
+        }
+      },
+      "expect": {
+        "code": "internal_error",
+        "status": 500,
+        "retry": false,
+        "note": "The request may have run. Never retry a 500."
+      }
+    },
+    {
+      "name": "bad_gateway",
+      "status": 502,
+      "headers": {},
+      "body": null,
+      "expect": {
+        "code": "request_failed",
+        "status": 502,
+        "retry": true
+      }
+    },
+    {
+      "name": "unavailable_with_request_id",
+      "status": 503,
+      "headers": {
+        "x-request-id": "req_fixture_1"
+      },
+      "body": {
+        "error": {
+          "code": "internal_error",
+          "message": "Temporarily unavailable."
+        }
+      },
+      "expect": {
+        "code": "internal_error",
+        "status": 503,
+        "retry": true,
+        "requestId": "req_fixture_1"
+      }
+    },
+    {
+      "name": "not_json",
+      "status": 504,
+      "headers": {},
+      "bodyText": "<html>Gateway Timeout</html>",
+      "expect": {
+        "code": "request_failed",
+        "status": 504,
+        "retry": true
+      }
+    }
+  ]
+}

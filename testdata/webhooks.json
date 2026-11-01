@@ -1,0 +1,91 @@
+{
+  "now": 1790000000,
+  "secret": "whsec_fixture_secret_not_for_production_use",
+  "toleranceSeconds": 300,
+  "headerName": "zevauth-signature",
+  "cases": [
+    {
+      "name": "valid",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000000,v1=d10c90ef4e356c044fc4694a6f2187d0fed75f3e2ccf9d33aae9d2468d608bbf",
+      "valid": true
+    },
+    {
+      "name": "valid_with_spaces",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000000, v1=d10c90ef4e356c044fc4694a6f2187d0fed75f3e2ccf9d33aae9d2468d608bbf",
+      "valid": true
+    },
+    {
+      "name": "valid_at_tolerance_edge",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1789999700,v1=0c70468d2442195d658753e8e486f64e8d985c201d66957fbe2d5733e94ed827",
+      "valid": true
+    },
+    {
+      "name": "expired",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1789999699,v1=4ffc5ac0d3fdba7ab1dd78cb7f2b34237bc7b51a89b81ba4ea4f07e7a6fc86af",
+      "valid": false,
+      "error": "webhook_timestamp_out_of_range"
+    },
+    {
+      "name": "future",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000301,v1=ee3330d1cf2e9fa0b025e3f91011a2e6c4b4947cec7e1219dc44fac4b5a79627",
+      "valid": false,
+      "error": "webhook_timestamp_out_of_range"
+    },
+    {
+      "name": "tampered_body",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"eve@example.com\"}}",
+      "signature": "t=1790000000,v1=d10c90ef4e356c044fc4694a6f2187d0fed75f3e2ccf9d33aae9d2468d608bbf",
+      "valid": false,
+      "error": "webhook_signature_mismatch"
+    },
+    {
+      "name": "reserialized_body",
+      "payload": "{\n  \"id\": \"evt_fixture_1\",\n  \"type\": \"user.created\",\n  \"createdAt\": \"2026-09-21T14:13:20.000Z\",\n  \"data\": {\n    \"id\": \"user_fixture_1\",\n    \"email\": \"ada@example.com\"\n  }\n}",
+      "signature": "t=1790000000,v1=d10c90ef4e356c044fc4694a6f2187d0fed75f3e2ccf9d33aae9d2468d608bbf",
+      "valid": false,
+      "error": "webhook_signature_mismatch",
+      "note": "Verify the raw body bytes, never a re-encoded object."
+    },
+    {
+      "name": "wrong_secret",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000000,v1=9e5438ecbfd4443e8b5b5f4363de5d50139121d3edaeb3984792215b19c6390c",
+      "valid": false,
+      "error": "webhook_signature_mismatch"
+    },
+    {
+      "name": "missing_timestamp",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "v1=d10c90ef4e356c044fc4694a6f2187d0fed75f3e2ccf9d33aae9d2468d608bbf",
+      "valid": false,
+      "error": "webhook_malformed_signature"
+    },
+    {
+      "name": "missing_v1",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000000",
+      "valid": false,
+      "error": "webhook_malformed_signature"
+    },
+    {
+      "name": "empty",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "",
+      "valid": false,
+      "error": "webhook_malformed_signature"
+    },
+    {
+      "name": "uppercase_hex",
+      "payload": "{\"id\":\"evt_fixture_1\",\"type\":\"user.created\",\"createdAt\":\"2026-09-21T14:13:20.000Z\",\"data\":{\"id\":\"user_fixture_1\",\"email\":\"ada@example.com\"}}",
+      "signature": "t=1790000000,v1=D10C90EF4E356C044FC4694A6F2187D0FED75F3E2CCF9D33AAE9D2468D608BBF",
+      "valid": false,
+      "error": "webhook_signature_mismatch",
+      "note": "The signature is lowercase hex; compare it exactly."
+    }
+  ]
+}
